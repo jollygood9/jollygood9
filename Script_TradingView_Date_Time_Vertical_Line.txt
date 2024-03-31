@@ -1,0 +1,48 @@
+
+// Script Snippet - 1
+//paints silver lines every 1 hour, except every 4 hours, where it paints yellow lines. It goes backwards.
+enableTimeLines = input(defval=true, type=input.bool, title="Enable Time Lines")
+// Chartlines 1h and 4h
+if enableTimeLines
+    timeA = 21 // starts at 21:00 hs
+    timeB = 21
+    for i = 0 to 60
+        timeA := timeA - 4 // and from 21hs goes backwards
+        targetTimeA = timestamp("GMT-3", year, month, dayofmonth, timeA, 00, 00)
+        line.new(x1=targetTimeA, y1=open, x2=targetTimeA, y2=close, xloc=xloc.bar_time, extend=extend.both, color=color.new(color.yellow, 20), style=line.style_dotted, width=1)
+        timeB := timeB - 1
+        if timeB != (21 or 01 or 05 or 09 or 13 or 17)
+            targetTimeB = timestamp("GMT-3", year, month, dayofmonth, timeB, 00, 00)
+            line.new(x1=targetTimeB, y1=open, x2=targetTimeB, y2=close, xloc=xloc.bar_time, extend=extend.both, color=color.new(color.silver, 50), style=line.style_dotted, width=1)
+
+
+// Script Snippet - 2			
+//@version=4
+study("Line at time", overlay=true)
+targetTime = timestamp("GMT+1", year, month, dayofmonth, 08, 00, 00)
+bgcolor(targetTime == time ? color.silver : na, transp = 0)
+
+// Debugging: these plots lines in separate window
+plot(targetTime, "targetTime", color.orange)
+plot(time, "time")
+
+
+// Script Snippet - 3
+//@version=4
+// With this version you can choose:
+//A from/to hour range
+//To show the line on weekdays only
+//Between bgcolor or vline mode
+
+study("Line at time",overlay=true)
+fromHour = input(7)
+toHour = input(10)
+weekdaysOnly = input(true)
+useVline = input(false)
+dayIsOk = not weekdaysOnly or (dayofweek != dayofweek.saturday and dayofweek != dayofweek.sunday)
+t1 = timestamp("GMT+2", year, month, dayofmonth, fromHour, 00, 00)
+t2 = timestamp("GMT+2", year, month, dayofmonth, toHour, 00, 00)
+timeIsOk = (time >= t1) and (time <= t2)
+bgcolor( not useVline and timeIsOk and dayIsOk ? color.orange : na, transp = 80)
+if useVline and timeIsOk and dayIsOk
+    line.new(bar_index, low * .9999, bar_index, high * 1.0001, xloc.bar_index, extend.both, #FF8000ff, line.style_solid, 1)
